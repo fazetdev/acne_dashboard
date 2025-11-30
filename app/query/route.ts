@@ -2,12 +2,12 @@ import postgres from 'postgres';
 
 export async function GET() {
   try {
-    // Debug: Check if environment variable exists
-    const dbUrl = process.env.POSTGRES_URL_NON_POOLING;
+    // Use DATABASE_URL directly from environment
+    const dbUrl = process.env.DATABASE_URL;
     
     if (!dbUrl) {
       return Response.json({ 
-        error: "POSTGRES_URL_NON_POOLING is missing",
+        error: "DATABASE_URL is missing",
         availableVars: Object.keys(process.env).filter(key => key.includes('POSTGRES') || key.includes('DATABASE'))
       }, { status: 500 });
     }
@@ -26,7 +26,7 @@ export async function GET() {
     return Response.json({ 
       error: error instanceof Error ? error.message : 'Unknown error',
       envCheck: {
-        hasPostgresUrl: !!process.env.POSTGRES_URL_NON_POOLING,
+        hasDatabaseUrl: !!process.env.DATABASE_URL,
         allDbVars: Object.keys(process.env).filter(key => key.includes('POSTGRES') || key.includes('DATABASE'))
       }
     }, { status: 500 });
