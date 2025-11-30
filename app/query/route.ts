@@ -1,22 +1,34 @@
 import postgres from 'postgres';
 
-const sql = postgres(process.env.POSTGRES_URL_NON_POOLING!);
-
-async function listInvoices() {
-  const data = await sql`
-    SELECT invoices.amount, customers.name
-    FROM invoices
-    JOIN customers ON invoices.customer_id = customers.id
-    WHERE invoices.amount = 666;
-  `;
-
-  return data;
-}
-
 export async function GET() {
   try {
-    return Response.json(await listInvoices());
+    // Debug: Check if environment variable exists
+    const dbUrl = process.env.POSTGRES_URL_NON_POOLING;
+    
+    if (!dbUrl) {
+      return Response.json({ 
+        error: "POSTGRES_URL_NON_POOLING is missing",
+        availableVars: Object.keys(process.env).filter(key => key.includes('POSTGRES') || key.includes('DATABASE'))
+      }, { status: 500 });
+    }
+
+    const sql = postgres(dbUrl);
+    
+    const data = await sql`
+      SELECT invoices.amount, customers.name
+      FROM invoices
+      JOIN customers ON invoices.customer_id = customers.id
+      WHERE invoices.amount = 666;
+    `;
+
+    return Response.json(data);
   } catch (error) {
-    return Response.json({ error }, { status: 500 });
+    return Response.json({ 
+      error: error.message,
+      envCheck: {
+        hasPostgresUrl: !!process.env.POSTGRES_URL_NON_POOLING,
+        allDbVars: Object.keys(process.env).filter(key => key.includes('POSTGRES') || key.includes('DATABASE'))
+      }
+    }, { status: 500 });
   }
 }
