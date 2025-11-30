@@ -24,7 +24,7 @@ export async function GET() {
     return Response.json(data);
   } catch (error) {
     return Response.json({ 
-      error: error.message,
+      error: error instanceof Error ? error.message : 'Unknown error',
       envCheck: {
         hasPostgresUrl: !!process.env.POSTGRES_URL_NON_POOLING,
         allDbVars: Object.keys(process.env).filter(key => key.includes('POSTGRES') || key.includes('DATABASE'))
